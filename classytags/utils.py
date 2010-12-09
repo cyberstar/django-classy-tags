@@ -72,3 +72,44 @@ def mixin(parent, child, attrs={}):
         (child, parent),
         attrs
     )
+
+def _prepend(old, new):
+    return '%s\n\n%s' % (new, old)
+
+def _append(old, new):
+    return '%s\n\n%s' % (old, new)
+
+def _replace(old, new):
+    return new
+    
+AUTODOC_STRATEGIES = {
+    'prepend': _prepend,
+    'append': _append,
+    'replace': _replace,
+}
+
+AUTODOC_TEMPLATE = """    Syntax:
+    
+    ::
+    
+        %s"""
+
+def autodoc(attrs, tag_name):
+    """
+    Automatically create documentation for this tag
+    """
+    old = attrs.get('__doc__', '')
+    strategy = attrs.get('autodoc_strategy', 'prepend')
+    syntax = '{%% %s' % tag_name
+    options = attrs.get('options', None)
+    if options:
+        breakpoints = [None] + options.breakpoints
+        for breakpoint in breakpoints:
+            if breakpoint:
+                syntax += ' %s' % breakpoint
+            for argument in options.options[breakpoint]:
+                syntax += ' <%s>' % argument.name
+    syntax += ' %}'
+    new = AUTODOC_TEMPLATE % syntax
+    attrs['__doc__'] = AUTODOC_STRATEGIES.get(strategy, _prepend)(old, new)
+    print repr(attrs['__doc__'])
