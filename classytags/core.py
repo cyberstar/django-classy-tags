@@ -1,5 +1,5 @@
 from classytags.parser import Parser
-from classytags.utils import StructuredOptions, get_default_name
+from classytags.utils import StructuredOptions, get_default_name, autodoc
 from django.template import Node
 
 
@@ -54,6 +54,8 @@ class TagMeta(type):
         fake_func.__name__ = tag_name
         attrs['_decorated_function'] = fake_func
         attrs['name'] = tag_name
+        if attrs.get('autodoc', True):
+            autodoc(attrs, tag_name)
         return super(TagMeta, cls).__new__(cls, name, bases, attrs)
 
 
@@ -64,6 +66,9 @@ class Tag(Node):
     __metaclass__ = TagMeta
     
     options = Options()
+    
+    autodoc = True
+    autodoc_strategy = 'prepend'
     
     def __init__(self, parser, tokens):
         self.kwargs, self.blocks = self.options.parse(parser, tokens)
