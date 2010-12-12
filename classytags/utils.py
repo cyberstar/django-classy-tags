@@ -112,4 +112,3 @@ def autodoc(attrs, tag_name):
     syntax += ' %}'
     new = AUTODOC_TEMPLATE % syntax
     attrs['__doc__'] = AUTODOC_STRATEGIES.get(strategy, _prepend)(old, new)
-    print repr(attrs['__doc__'])
