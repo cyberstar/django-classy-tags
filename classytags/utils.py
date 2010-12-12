@@ -93,15 +93,9 @@ AUTODOC_TEMPLATE = """    Syntax:
     ::
     
         %s"""
-
-def autodoc(attrs, tag_name):
-    """
-    Automatically create documentation for this tag
-    """
-    old = attrs.get('__doc__', '')
-    strategy = attrs.get('autodoc_strategy', 'prepend')
+    
+def generate_docs(tag_name, options):
     syntax = '{%% %s' % tag_name
-    options = attrs.get('options', None)
     if options:
         breakpoints = [None] + options.breakpoints
         for breakpoint in breakpoints:
@@ -110,5 +104,14 @@ def autodoc(attrs, tag_name):
             for argument in options.options[breakpoint]:
                 syntax += ' <%s>' % argument.name
     syntax += ' %}'
-    new = AUTODOC_TEMPLATE % syntax
+    return AUTODOC_TEMPLATE % syntax
+
+def autodoc(attrs, tag_name):
+    """
+    Automatically create documentation for this tag
+    """
+    old = attrs.get('__doc__', '')
+    strategy = attrs.get('autodoc_strategy', 'prepend')
+    options = attrs.get('options', None)
+    new = generate_docs(tag_name, options)
     attrs['__doc__'] = AUTODOC_STRATEGIES.get(strategy, _prepend)(old, new)

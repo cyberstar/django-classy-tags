@@ -717,7 +717,42 @@ class ClassytagsTests(TestCase):
         self._tag_tester(MultiKeywordArgumentTag, templates)
         dummy_tokens = DummyTokens('key="value"', 'key2="value2"', 'key3="value3"')
         self.assertRaises(exceptions.TooManyArguments, opts.parse, dummy_parser, dummy_tokens)
+    
+    
+    
+    def test_20_admindocs(self):
+        docs = "documentation"
+        opts = core.Options(arguments.Argument('arg'))
+        tag_name = 'doc_tag'
         
+        generated_docs = utils.generate_docs(tag_name, opts)
+        
+        class NoDocTag(core.Tag):
+            __doc__ = docs
+            options = opts
+            autodoc = False
+            name = tag_name
+        self.assertEqual(NoDocTag.__doc__, docs)
+        
+        class PrependDocTag(core.Tag):
+            __doc__ = docs
+            options = opts
+            name = tag_name
+        self.assertEqual(PrependDocTag.__doc__, '%s\n\n%s' % (generated_docs, docs))
+        
+        class AppendDocTag(core.Tag):
+            __doc__ = docs
+            options = opts
+            autodoc_strategy = 'append'
+            name = tag_name
+        self.assertEqual(AppendDocTag.__doc__, '%s\n\n%s' % (docs, generated_docs))
+        
+        class ReplaceDocTag(core.Tag):
+            __doc__ = docs
+            options = opts
+            autodoc_strategy = 'replace'
+            name = tag_name
+        self.assertEqual(ReplaceDocTag.__doc__, generated_docs)
 
 suite = unittest.TestLoader().loadTestsFromTestCase(ClassytagsTests)
 
